@@ -23,11 +23,7 @@ router.get('/', function (req, res, next) {
 
 // with JSON
 router.get('/api1', jsonParser, urlencodedParser, function (req, res, next) {
-    // $.get('/api', {id: 1, name: "titi"}, function(d) {}).done(d => {console.log(d)}).fail(f => {console.log(f)});
     console.log(`API1 GET query`, req.query);
-    // console.log(`API1 GET body`, req.body);
-    // $.get('/api/1/titi', function(data) { console.log(data)}).done(d => {console.log(d)}).fail(f => {console.log(f)});
-    // console.log(`API1 GET params`, req.params);
     res.status(200).send('ok');
 });
 
@@ -43,10 +39,6 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
         upDir = "";
     }
     console.log("browsing ", currentDir, upDir);
-    // if (currentDir === ROOT) {
-    //     res.status(201).send({ msg: 'already on the top' });
-    //     return;
-    // }
     try {
         let records = [];
         let files = await fs.readdir(currentDir);
@@ -93,28 +85,6 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
         res.status(400).send({msg: error.message, code: error.code, records: []});
     }
     return;
-});
-
-
-
-// with params
-router.get('/api2/:id?/:name?', jsonParser, urlencodedParser, function (req, res, next) {
-    // $.get('/api', {id: 1, name: "titi"}, function(d) {}).done(d => {console.log(d)}).fail(f => {console.log(f)});
-    console.log(`API2 GET query`, req.query);
-    console.log(`API2 GET body`, req.body);
-    // $.get('/api/1/titi', function(data) { console.log(data)}).done(d => {console.log(d)}).fail(f => {console.log(f)});
-    console.log(`API2 GET params`, req.params);
-    res.status(200).send('ok')
-});
-
-// post with JSON
-router.post('/api1', jsonParser, urlencodedParser, function (req, res, next) {
-    // $.get('/api', {id: 1, name: "titi"}, function(d) {}).done(d => {console.log(d)}).fail(f => {console.log(f)});
-    console.log(`API1 POST query`, req.query);
-    console.log(`API1 POST body`, req.body);
-    // $.get('/api/1/titi', function(data) { console.log(data)}).done(d => {console.log(d)}).fail(f => {console.log(f)});
-    console.log(`API1 POST params`, req.params);
-    res.status(200).send('ok')
 });
 
 module.exports = router;
