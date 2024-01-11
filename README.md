@@ -3,27 +3,38 @@
 
 ## About
 
-This small footprint filemanager app - server client - demonstrates how to traverse in the server side filesystem from WEB client.
-The filemanager's list contains directory entries from the server's filesystem. By default the directory list root path is the
-same as the server application's working directory - but it can be set whatever else *(existing and readable)* path.
+This small footprint filemanager app - server and client - demonstrates how to traverse in the server's side filesystem from WEB client.
+The filemanager's list contains directory entries from the server's filesystem. By default the root directory is the
+same as the server application's working directory - but it can be set whatever else *(existing and readable by the user who runs the code on the server)* path.
 
 The list will start a link to the parent directory **..**, then the remaining directory entries from the remote filesystem.
 If the list contains direcories, clicking on them the filemanager will send a new query to the server to obtain the selected
 directory contents if any.
+
+```
+_________________________________________
+..
+[DIR] DIR001
+[DIR] DIR002
+FILE001
+FILE002
+...
+```
+> How does the list look like. On the top the backlink, then directories - alphabetic order - finally files same order as the directories.
 
 As per now the click on files does nothing - the app is highly extendible with various extra and usefull features.
 
 The main goal was to present a web based filemanager with ExpressJS support which does not use any not necessary redirections - or very limited and proxy safe 
 redirections only - but AJAX queries with parameters *see below the code fragment*.
 
-### How the /files query is going to be sent?
+### How the /files query is going to be sent from the browser?
 ```javascript
    ...
    $.get(
       '/files',
       {
           path: <path of the selected directory entry from the list>
-          [,WhatEverKey: WhatEverValue(s)... if necessary for the server side app. ]
+          // [,WhatEverKey: WhatEverValue(s)... if necessary for the server side app. ]
       },
       function(data) {
          // do whatever want at this phase with the data
@@ -39,7 +50,9 @@ redirections only - but AJAX queries with parameters *see below the code fragmen
 ```
 > The code fragment above demonstrates how jQuery.ajax(...) call used to send new queries to the server.
 
-At the server's router middleware will obtain query params in the ***req.query*** object.
+### How the router middleware will deal with the query parameters?
+
+At the server's router middleware expects query params in the ***req.query*** object.
 ```javascript
    router.get('/files', ...., async function(req, res) {
         ...
