@@ -70,11 +70,12 @@ $(function () {
             $('ul#filemanager').append(dom);
         }
     }
-
+    // Handle clicks on directories and files....
     $(document).on('click', function (ev) {
         ev.preventDefault();
         let elem = ev.target;
         let data = $(elem).data();
+        // handle directory clicks: call for new list of directory entries
         if (data.type === 'd') {
             $.get('/files', { path: data.path }, function (s, g) {
                 EmptyList();
@@ -87,12 +88,16 @@ $(function () {
                 console.log({ f });
             });
         } else {
-            console.log({ elem, data });
+            // handle click on file: trigger download action sending request, and
+            // then - if data returns from server - open a download window for
+            // the data
+            // console.log({ elem, data });
             // window.open(`/download?path=${data.path}`);
+            // The trick!!!!
             window.location.href = `/download?path=${data.path}`;
         }
     });
-
+    // useless in this app
     var saveData = (function () {
         var a = document.createElement('a')
         document.body.appendChild(a)

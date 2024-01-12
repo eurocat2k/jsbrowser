@@ -94,7 +94,9 @@ router.get('/download', async (req, res) => {
     var filename = path.basename(query);
     if (query) currentDir = path.join(ROOT, query);
     // res.status(200).send({currentDir, query, filename, ROOT});
-    res.download(currentDir, filename, function (err) {
+    res.download(currentDir, filename, {
+        maxAge: 0,
+    }, function (err) {
         if (err) {
             console.log({ err });
         }
