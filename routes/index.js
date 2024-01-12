@@ -87,4 +87,18 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
     return;
 });
 
+
+router.get('/download', async (req, res) => {
+    var currentDir = ROOT;
+    var query = req.query.path || '';
+    var filename = path.basename(query);
+    if (query) currentDir = path.join(ROOT, query);
+    // res.status(200).send({currentDir, query, filename, ROOT});
+    res.download(currentDir, filename, function (err) {
+        if (err) {
+            console.log({ err });
+        }
+    });
+});
+
 module.exports = router;

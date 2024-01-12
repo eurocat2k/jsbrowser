@@ -1,0 +1,8 @@
+### GET /files
+GET http://localhost:3000/files?
+
+### GET /files?path=express
+GET http://localhost:3000/files?path=express
+
+### GET /download?path=express/package.json
+GET http://localhost:3000/download?path=express/package.json

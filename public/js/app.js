@@ -44,7 +44,7 @@ $(function () {
             console.log({ f });
         });
     }
-    // 
+    //
 
     function EmptyList() {
         $('ul#filemanager').children().each((i, c) => {
@@ -65,7 +65,7 @@ $(function () {
             if (entry.IsDirectory) {
                 dom = `<li class="bi bi-folder" style="list-style: none;" data-path="${entry.Path}" data-type="d">${entry.Name}</li>`;
             } else {
-                dom = `<li class="bi bi-file" style="list-style: none;"  data-path="${entry.Path}" data-type="f">${entry.Name}</li>`;
+                dom = `<li class="bi bi-file" style="list-style: none;" data-path="${entry.Path}" data-type="f" data-ext="${entry.Ext}" data-name="${entry.Name}">${entry.Name}</li>`;
             }
             $('ul#filemanager').append(dom);
         }
@@ -86,10 +86,31 @@ $(function () {
             }).fail(f => {
                 console.log({ f });
             });
+        } else {
+            console.log({ elem, data });
+            // window.open(`/download?path=${data.path}`);
+            window.location.href = `/download?path=${data.path}`;
         }
     });
 
-    
+    var saveData = (function () {
+        var a = document.createElement('a')
+        document.body.appendChild(a)
+        a.style = 'display: none'
+        console.log(arguments);
+        return function (data, fileName) {
+            var json = JSON.stringify(data),
+            blob = new Blob([json], { type: 'octet/stream' }),
+            url = window.URL.createObjectURL(blob)
+            a.href = url
+            a.download = fileName
+            a.click()
+            window.URL.revokeObjectURL(url)
+        }
+    })()
+
+
+
     $('button#home').on('click', function () {
         // SEE/EXPECT QUERY CONTENT
         $.get('/files', {id: 1, action: 'list'}, function (data) {
@@ -100,7 +121,7 @@ $(function () {
             });
         }).done(data => {
             let records = data?.records;
-            // // then 
+            // // then
             RenderList(records);
         }).fail(f => { console.log({ f }) });
     });
