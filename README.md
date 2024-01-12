@@ -25,6 +25,7 @@ FILE002
 As per now the click on files does nothing - the app is highly extendible with various extra and usefull features.
 ## Update: 24/12/01: download works for files.
 > Update 241201: clicking on the file, the Express' ***res.download()*** function transfers the file at the path as an 'attachment'. There is no streaming yet, but as I told you folks, there are a lot of room for various inventions, improvemnts and so forth. So, let's code!
+> The trick was call ***window.location.href*** = **/download?path=<path_from_DOM_data-path_value>**
 
 The main goal was to present a web based filemanager with ExpressJS support which does not use any not necessary redirections - or very limited and proxy safe 
 redirections only - but AJAX queries with parameters *see below the code fragment*.
