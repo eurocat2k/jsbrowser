@@ -1,7 +1,8 @@
 var express = require('express')
 var router = express.Router()
 var bodyParser = require('body-parser');
-var fs = require('fs/promises');
+var fs = require('fs');
+var fsp = require('fs/promises');
 var path = require('path');
 const _ = require('lodash');
 
@@ -41,11 +42,11 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
     console.log("browsing ", currentDir, upDir);
     try {
         let records = [];
-        let files = await fs.readdir(currentDir);
+        let files = await fsp.readdir(currentDir);
         for (let idx in files) {
             let f = files[idx];
             let fpath = path.join(currentDir, f);
-            let st = await fs.stat(fpath);
+            let st = await fsp.stat(fpath);
             // console.log({ f, currentDir, fpath, isDirectory: st.isDirectory() });
             if (st.isDirectory()) {
                 if (!f.match(/^\./)) {
@@ -87,20 +88,78 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
     return;
 });
 
-
+// WITHOUT RANGE
+// router.get('/download', async (req, res) => {
+//     var currentDir = ROOT;
+//     var query = req.query.path || '';
+//     var filename = path.basename(query);
+//     if (query) currentDir = path.join(ROOT, query);
+//     // res.status(200).send({currentDir, query, filename, ROOT});
+//     res.download(currentDir, filename, {
+//         maxAge: 0,
+//     }, function (err) {
+//         if (err) {
+//             console.log({ err });
+//         }
+//     });
+// });
+// WITH RANGE
 router.get('/download', async (req, res) => {
-    var currentDir = ROOT;
-    var query = req.query.path || '';
-    var filename = path.basename(query);
-    if (query) currentDir = path.join(ROOT, query);
-    // res.status(200).send({currentDir, query, filename, ROOT});
-    res.download(currentDir, filename, {
-        maxAge: 0,
-    }, function (err) {
-        if (err) {
-            console.log({ err });
-        }
+    // const root_path = path.join(__dirname, '../', 'download')
+    //
+    var root_path = ROOT;
+    let fullPath;
+    const filePath = req.query.path || '';
+    if (filePath) {
+        fullPath = path.resolve(path.join(root_path, filePath));
+    }
+    let st = await fsp.stat(fullPath);
+    console.log({ fullPath });
+    const fileSize = st.size;
+    var filename = path.basename(filePath);
+    console.log(`File size: of ${filename}  ${fileSize}`);
+
+    let start = 0;
+    let end = fileSize - 1;
+
+    const range = req.headers.range;
+
+    if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        start = parseInt(parts[0], 10);
+        end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    }
+
+    const chunkSize = end - start + 1;
+    let downloadedBytes = 0;
+
+    const fileStream = fs.createReadStream(filePath, { start, end });
+    const headers = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': 'application/octetstream'
+    };
+
+    res.writeHead(206, headers);
+
+    fileStream.on('data', chunk => {
+        downloadedBytes += chunk.length;
+        const progress = (downloadedBytes / fileSize) * 100;
+        console.log(`Download progress: ${progress.toFixed(2)}%`);
+        res.write(chunk);
+    });
+
+    fileStream.on('end', () => {
+        res.end();
+    });
+
+    req.on('close', () => {
+        console.log('Pausing...');
+        fileStream.destroy();
     });
 });
+
+
 
 module.exports = router;
