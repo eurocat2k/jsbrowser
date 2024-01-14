@@ -5,6 +5,7 @@ var fs = require('fs');
 var fsp = require('fs/promises');
 var path = require('path');
 const _ = require('lodash');
+const mime = require('mime-types');
 
 const ROOT = path.dirname(__dirname);
 
@@ -89,22 +90,22 @@ router.get('/files', jsonParser, urlencodedParser, async function (req, res, nex
 });
 
 // WITHOUT RANGE
-// router.get('/download', async (req, res) => {
-//     var currentDir = ROOT;
-//     var query = req.query.path || '';
-//     var filename = path.basename(query);
-//     if (query) currentDir = path.join(ROOT, query);
-//     // res.status(200).send({currentDir, query, filename, ROOT});
-//     res.download(currentDir, filename, {
-//         maxAge: 0,
-//     }, function (err) {
-//         if (err) {
-//             console.log({ err });
-//         }
-//     });
-// });
-// WITH RANGE
 router.get('/download', async (req, res) => {
+    var currentDir = ROOT;
+    var query = req.query.path || '';
+    var filename = path.basename(query);
+    if (query) currentDir = path.join(ROOT, query);
+    // res.status(200).send({currentDir, query, filename, ROOT});
+    res.download(currentDir, filename, {
+        maxAge: 0,
+    }, function (err) {
+        if (err) {
+            console.log({ err });
+        }
+    });
+});
+// WITH RANGE
+router.get('/api/download', async (req, res) => {
     // const root_path = path.join(__dirname, '../', 'download')
     //
     var root_path = ROOT;
@@ -123,14 +124,17 @@ router.get('/download', async (req, res) => {
     let end = fileSize - 1;
 
     const range = req.headers.range;
-
+    console.log({ range });
     if (range) {
         const parts = range.replace(/bytes=/, '').split('-');
         start = parseInt(parts[0], 10);
         end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    } else {
+        start = 0;
+        end = fileSize - 1;
     }
 
-    const chunkSize = end - start + 1;
+    const chunkSize = (end - start + 1) >= 65535 ? 65535 :  fileSize;
     let downloadedBytes = 0;
 
     const fileStream = fs.createReadStream(filePath, { start, end });
@@ -144,6 +148,7 @@ router.get('/download', async (req, res) => {
     res.writeHead(206, headers);
 
     fileStream.on('data', chunk => {
+        console.log({ chunk, size: chunk.length, of: chunkSize, downloadedBytes});
         downloadedBytes += chunk.length;
         const progress = (downloadedBytes / fileSize) * 100;
         console.log(`Download progress: ${progress.toFixed(2)}%`);
@@ -151,6 +156,7 @@ router.get('/download', async (req, res) => {
     });
 
     fileStream.on('end', () => {
+        console.log('Finished...');
         res.end();
     });
 

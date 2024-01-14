@@ -65,7 +65,7 @@ $(function () {
             if (entry.IsDirectory) {
                 dom = `<li class="bi bi-folder" style="list-style: none;" data-path="${entry.Path}" data-type="d">${entry.Name}</li>`;
             } else {
-                dom = `<li class="bi bi-file" style="list-style: none;" data-path="${entry.Path}" data-type="f" data-ext="${entry.Ext}" data-name="${entry.Name}">${entry.Name}</li>`;
+                dom = `<li class="bi bi-file" style="list-style: none;" data-path="${entry.Path}" data-type="f" data-ext="${entry.Ext}" data-name="${entry.Name}" data-size="${entry.Size}">${entry.Name}</li>`;
             }
             $('ul#filemanager').append(dom);
         }
@@ -87,14 +87,9 @@ $(function () {
             }).fail(f => {
                 console.log({ f });
             });
-        } else {
-            // handle click on file: trigger download action sending request, and
-            // then - if data returns from server - open a download window for
-            // the data
-            // console.log({ elem, data });
-            // window.open(`/download?path=${data.path}`);
-            // The trick!!!!
-            window.location.href = `/download?path=${data.path}`;
+        } else if (data.type === 'f') {
+            console.log(`Download ${data.size} bytes...`)
+            window.open(`/download?path=${data.path}`);
         }
     });
     // useless in this app
